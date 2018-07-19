@@ -104,9 +104,14 @@ def makePattern(coin, df, startIndex, patternSize, patternHeight) :
 
     # 인풋 패턴을 만들고
     patMatrix = mf.makeMatrix(scaledDf, patternSize, patternHeight)
+    
+    # 날짜 변환 해 준다. string --> date
+    sr_time = df.iloc[sIndex:eIndex]['TimeKst'].str.replace('T', ' ')
+    sr_time = pd.to_datetime(sr_time, format='%Y-%m-%d %H:%M:%S')
+
 
     # pattern 객체를 생성한다.
-    pattern = po.Pattern(coin, df.iloc[sIndex:eIndex]['TimeKst'].tolist(), patMatrix)
+    pattern = po.Pattern(coin, sr_time.tolist(), patMatrix)
 
     return pattern
 
@@ -150,88 +155,89 @@ def makeResultPattern(coin, df, startIndex, patternSize, patternHeight,
     scaledResultDf = mf.getScaledPatternData(df.iloc[sIndex:eIndex][['Open', 'High', 'Low', 'Close']],
                                              patMinValue, patMaxValue, patternHeight, resultPatStandardHeight)
 
+    # 결과 패턴을 만들고...
     resultPatMatrix = mf.makeResultMatrix(scaledResultDf, resultPatSize, resultPatHeight)
 
-    resultPattern = po.Result(coin, df.iloc[sIndex:eIndex]['TimeKst'].tolist(), resultPatMatrix)
+
+    # 날짜 변환 해 준다. string --> date
+    sr_time = df.iloc[sIndex:eIndex]['TimeKst'].str.replace('T', ' ')
+    sr_time = pd.to_datetime(sr_time, format='%Y-%m-%d %H:%M:%S')
+
+    resultPattern = po.Result(coin, sr_time.tolist(), resultPatMatrix)
 
     return resultPattern
 
 
 
-def registerPatternGroup(patMatrix, resultPatMatrix):
+def registerPatternGroup(pattern, resultPattern):
 
-    # PatternGroup에 patMatrix를 등록한다.
+    # PatternGroup에 Pattern 등록한다.
 
     global patternGroupList
     global SIMILAR_RATE_CRITERIA
 
     # 기존에 패턴을 임시 저장하기 위한 check 변수
     check_rate = 0
-    check_patClass = po.Pattern()
+    check_pattern = po.Pattern()
 
-    # pattern group list를 돌리면서 기존에 저장된 group 을 조사한다.
-    for groupPatClass in patternGroupList :
-        groupPatMatrix = groupPatClass.getPatternMatrix()
+    # pattern group list를 돌리면서 기존에 저장된 pattern 을 조사한다.
+    for p in patternGroupList:
+        gp_patMatrix = p.valueList
 
-        similar_rate = mf.comparePatternMatrix(groupPatMatrix, patMatrix)
+        similar_rate = mf.comparePatternMatrix(gp_patMatrix, pattern.valueList)
 
         # 가장 높은 일치율을 가지는 pattern class 를 찾아 check에 저장한다.
         if similar_rate > check_rate :
             check_rate = similar_rate
-            check_patClass = groupPatClass
+            check_pattern = p
 
 
     # 일치율 조건 비율보다 낮다면 신규 pattern group을 생성한다.
     if check_rate < SIMILAR_RATE_CRITERIA :
-        newPatClass = po.Pattern()
-        newPatClass.setPatternMatrix(patMatrix)
-        patternGroupList.append(newPatClass)
+        patternGroupList.append(pattern)
 
         print ('Create new pattern... patternGroup Size = ', len(patternGroupList))
 
-        return registerResultPatternGroup(newPatClass, resultPatMatrix)
+        return registerResultPatternGroup(check_pattern, resultPattern)
+
     # 일치율 조건 비율보다 높은 대상이 있는 경우, 해당 pattern class에 결과 pattern 저장
-    else :
+    else:
 
         print ('Existed pattern... patternGroup Size = ', len(patternGroupList))
 
-        return registerResultPatternGroup(check_patClass, resultPatMatrix)
+        return registerResultPatternGroup(check_pattern, resultPattern)
 
 
-def registerResultPatternGroup(patternClass, resultPatMatrix) :
+def registerResultPatternGroup(pattern, resultPattern):
     global SIMILAR_RATE_RESULT_CRITERIA
 
-    resultPatGroupList = patternClass.getResultPatGroupList()
+    resultPatGroupList = pattern.resultGroupList
 
     # 기존에 패턴을 임시 저장하기 위한 check 변수
     check_rate = 0
-    check_resultPatClass = po.ResultPattern()
+    check_result_pattern = po.Result()
 
-    for groupResultPatClass in resultPatGroupList :
-        groupResultPatMatrix = groupResultPatClass.getResultPatternMatrix()
+    for r in resultPatGroupList:
+        gp_resultPatMatrix = r.valueList
 
-        similar_rate = mf.comparePatternMatrix(groupResultPatMatrix, resultPatMatrix)
+        similar_rate = mf.comparePatternMatrix(gp_resultPatMatrix, resultPattern.valueList)
 
         if similar_rate > check_rate :
             check_rate = similar_rate
-            check_resultPatClass = groupResultPatClass
+            check_result_pattern = r
 
 
     if check_rate < SIMILAR_RATE_RESULT_CRITERIA :
-        newResultPatClass = po.ResultPattern()
-        newResultPatClass.setResultPatternMatrix(resultPatMatrix)
-        newResultPatClass.setOddsCount(newResultPatClass.getOddsCount() + 1)
-
-        patternClass.getResultPatGroupList().append(newResultPatClass)
+        pattern.__add__(resultPattern)
 
         print (' -----> Create new result pattern... resultPatternGroup Size = ',
-               len(patternClass.getResultPatGroupList()) )
+               len(pattern.resultGroupList))
 
     else :
-        check_resultPatClass.setOddsCount(check_resultPatClass.getOddsCount() + 1)
+        check_result_pattern.addAppearence()
 
         print (' -----> Add existed result pattern... resultPatternGroup Size = ',
-               len(patternClass.getResultPatGroupList()))
+               len(pattern.resultGroupList))
 
 
 
