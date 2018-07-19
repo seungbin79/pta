@@ -26,9 +26,9 @@ RESULT_PAT_Y_AXIS = 1000
 RESULT_PAT_MY_AXIS = 500
 
 # 동일 패턴 일치율 수치
-SIMILAR_RATE_CRITERIA = 0.7
+SIMILAR_RATE_CRITERIA = 0.5
 # 결과 패턴 일치율 수치
-SIMILAR_RATE_RESULT_CRITERIA = 0.8
+SIMILAR_RATE_RESULT_CRITERIA = 0.5
 
 
 
@@ -178,7 +178,7 @@ def registerPatternGroup(pattern, resultPattern):
 
     # 기존에 패턴을 임시 저장하기 위한 check 변수
     check_rate = 0
-    check_pattern = po.Pattern()
+    check_pattern = pattern
 
     # pattern group list를 돌리면서 기존에 저장된 pattern 을 조사한다.
     for p in patternGroupList:
@@ -193,12 +193,12 @@ def registerPatternGroup(pattern, resultPattern):
 
 
     # 일치율 조건 비율보다 낮다면 신규 pattern group을 생성한다.
-    if check_rate < SIMILAR_RATE_CRITERIA :
+    if check_rate < SIMILAR_RATE_CRITERIA:
         patternGroupList.append(pattern)
 
         print ('Create new pattern... patternGroup Size = ', len(patternGroupList))
 
-        return registerResultPatternGroup(check_pattern, resultPattern)
+        return registerResultPatternGroup(pattern, resultPattern)
 
     # 일치율 조건 비율보다 높은 대상이 있는 경우, 해당 pattern class에 결과 pattern 저장
     else:
@@ -215,7 +215,7 @@ def registerResultPatternGroup(pattern, resultPattern):
 
     # 기존에 패턴을 임시 저장하기 위한 check 변수
     check_rate = 0
-    check_result_pattern = po.Result()
+    check_result_pattern = resultPattern
 
     for r in resultPatGroupList:
         gp_resultPatMatrix = r.valueList
@@ -271,27 +271,20 @@ def run() :
 
     # neo krw days ====================================================================
 
-    coin = po.Coin('NEO', 'KRW', '1', 'Days', 'Upbit')
+    coin = po.Coin('NEO', 'KRW', '1', 'days', 'Upbit')
     motherData = readMotherData(coin)
     createPattern(coin, motherData, 30, 33)
 
-    # # neo krw days ====================================================================
-    # motherInfo = getMotherInfo('NEO', 'KRW', 'Days', '1', 'Upbit')
-    # motherData = readMotherData(motherInfo)
-    #
-    # createPattern(motherData, 30, 33)
-    #
-    # # neo krw mins ====================================================================
-    # motherInfo = getMotherInfo('NEO', 'KRW', 'minutes', '60', 'Upbit')
-    # motherData = readMotherData(motherInfo)
-    #
-    # createPattern(motherData, 30, 33)
-    #
-    # motherInfo = getMotherInfo('NEO', 'KRW', 'minutes', '240', 'Upbit')
-    # motherData = readMotherData(motherInfo)
-    #
-    # createPattern(motherData, 30, 33)
-    #
+
+    # neo krw mins ====================================================================
+    coin = po.Coin('NEO', 'KRW', '60', 'minutes', 'Upbit')
+    motherData = readMotherData(coin)
+    createPattern(coin, motherData, 30, 33)
+
+    coin = po.Coin('NEO', 'KRW', '240', 'minutes', 'Upbit')
+    motherData = readMotherData(coin)
+    createPattern(coin, motherData, 30, 33)
+
     # # neo btc days ====================================================================
     # motherInfo = getMotherInfo('NEO', 'BTC', 'Days', '1', 'Upbit')
     # motherData = readMotherData(motherInfo)

@@ -94,7 +94,6 @@ class Pattern(Chart):
 
 
 
-
 # coin_1 = Coin('a', 'b', 1, 'c', 'd')
 #
 # print(coin_1)
