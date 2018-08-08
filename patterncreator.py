@@ -291,8 +291,10 @@ def run() :
 
     coin = po.Coin('NEO', 'KRW', '1', 'days', 'Upbit')
     loadPicke(coin, 30, 33)
+
     motherData = readMotherData(coin)
     createPattern(coin, motherData, 30, 33)
+
     savePickle(coin, 30, 33)
 
 
