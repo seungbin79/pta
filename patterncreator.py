@@ -23,15 +23,6 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 #=======================================================================================
 
-#글로벌 변수 선언#################################################
-##################################################################
-
-#패턴 사이즈 종류
-PAT_SIZE_SM = 30
-PAT_SIZE_MD = 60
-PAT_SIZE_LG = 90
-PAT_SIZE_XL = 120
-PAT_SIZE_XX = 150
 
 #패턴 높이 설정 : 100개의 Y 버켓 생성
 PAT_Y_AXIS = 100
@@ -44,7 +35,6 @@ RESULT_PAT_MY_AXIS = 500
 SIMILAR_RATE_CRITERIA = 0.5
 # 결과 패턴 일치율 수치
 SIMILAR_RATE_RESULT_CRITERIA = 0.5
-
 
 
 #패턴그룹은 글로벌 변수로 잡는다.
