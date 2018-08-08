@@ -1,5 +1,21 @@
 import pandas as pd
 import math
+from datetime import datetime as dt
+
+import logging
+
+# logging 처리 부분 =====================================================================
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('[%(asctime)s|%(levelname)s|%(name)s] %(message)s')
+
+file_handler = logging.FileHandler(f"Log/log_{dt.now().strftime('%Y%m%d%H%M%S')}.log")
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+#=======================================================================================
+
 
 def convertMatrixToCandleDataframe(matrix) :
 
@@ -187,5 +203,6 @@ def comparePatternMatrix(standPatMatrix, comparePatMatrix):
             total_cal = total_cal + sub_cal
 
     # print (total_cal / total_amount)
+    logger.debug(f'total_cal = {total_cal}, total_amount = {total_amount}')
 
     return total_cal / total_amount

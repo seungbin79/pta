@@ -2,11 +2,26 @@
 import pandas as pd
 import sys
 import os
+import math
+from datetime import datetime as dt
 import patternobject as po
 from ptlib import matrixfunction as mf
-import math
 import pickle
 import gzip
+import logging
+
+
+# logging 처리 부분 =====================================================================
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('[%(asctime)s|%(levelname)s|%(name)s] %(message)s')
+
+file_handler = logging.FileHandler(f"Log/log_{dt.now().strftime('%Y%m%d%H%M%S')}.log")
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+#=======================================================================================
 
 #글로벌 변수 선언#################################################
 ##################################################################
@@ -36,23 +51,24 @@ SIMILAR_RATE_RESULT_CRITERIA = 0.5
 patternGroupList = []
 
 
-def loadPicke() :
-    global patternGroupList
-    global PAT_X_AXIS
-    global RESULT_PAT_X_AXIS
-
-    # 입력 봉 수 + 결과 취합 봉 수
-    filename = 'Pattern/' + 'pattern_' + str(PAT_X_AXIS) + '_' + str(RESULT_PAT_X_AXIS) + '.pickle'
-
-    with gzip.open(filename, 'rb') as f:
-        patternGroupList = pickle.load(f)
-
-
-def savePickle(pat_x_axis, result_pat_x_axis) :
+def loadPicke(coin, pat_x_axis, result_pat_x_axis):
     global patternGroupList
 
     # 입력 봉 수 + 결과 취합 봉 수
-    filename = 'Pattern/' + 'pattern_' + str(pat_x_axis) + '_' + str(result_pat_x_axis) + '.pickle'
+    filename = f'Pattern/{coin.filename}_{pat_x_axis}_{result_pat_x_axis}.pickle'
+
+    try:
+        with gzip.open(filename, 'rb') as f:
+            patternGroupList = pickle.load(f)
+    except FileNotFoundError as e:
+        logger.exception(e)
+
+
+def savePickle(coin, pat_x_axis, result_pat_x_axis):
+    global patternGroupList
+
+    # 입력 봉 수 + 결과 취합 봉 수
+    filename = f'Pattern/{coin.filename}_{pat_x_axis}_{result_pat_x_axis}.pickle'
 
     with gzip.open(filename, 'wb') as f :
         pickle.dump(patternGroupList, f)
@@ -269,21 +285,25 @@ def createPattern(coin, motherData, pat_x_axis, result_pat_x_axis) :
 
 def run() :
 
+    logger.info("patterncreator start ==============================================")
+
     # neo krw days ====================================================================
 
     coin = po.Coin('NEO', 'KRW', '1', 'days', 'Upbit')
+    loadPicke(coin, 30, 33)
     motherData = readMotherData(coin)
     createPattern(coin, motherData, 30, 33)
+    savePickle(coin, 30, 33)
 
 
-    # neo krw mins ====================================================================
-    coin = po.Coin('NEO', 'KRW', '60', 'minutes', 'Upbit')
-    motherData = readMotherData(coin)
-    createPattern(coin, motherData, 30, 33)
-
-    coin = po.Coin('NEO', 'KRW', '240', 'minutes', 'Upbit')
-    motherData = readMotherData(coin)
-    createPattern(coin, motherData, 30, 33)
+    # # neo krw mins ====================================================================
+    # coin = po.Coin('NEO', 'KRW', '60', 'minutes', 'Upbit')
+    # motherData = readMotherData(coin)
+    # createPattern(coin, motherData, 30, 33)
+    #
+    # coin = po.Coin('NEO', 'KRW', '240', 'minutes', 'Upbit')
+    # motherData = readMotherData(coin)
+    # createPattern(coin, motherData, 30, 33)
 
     # # neo btc days ====================================================================
     # motherInfo = getMotherInfo('NEO', 'BTC', 'Days', '1', 'Upbit')

@@ -1,5 +1,7 @@
 # -*-coding: utf-8-*-
-class Coin:
+import logging
+
+class Coin(object):
 
     def __init__(self, code, currency, bucket, bucketType, market):
         self.code = code
@@ -24,7 +26,7 @@ class Coin:
         return f'{self.market}_{self.code}{self.currency}_{self.bucketType}_{self.bucket}'
 
 
-class Chart:
+class Chart(object):
 
     def __init__(self, coin, timeList=None, valueList=None):
         self.coin = coin
