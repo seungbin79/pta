@@ -275,7 +275,7 @@ def createPattern(coin, motherData, pat_x_axis, result_pat_x_axis) :
 
 def run() :
 
-    logger.info("patterncreator start ==============================================")
+    logger.info("============================= patterncreator start =============================")
 
     # neo krw days ====================================================================
 
